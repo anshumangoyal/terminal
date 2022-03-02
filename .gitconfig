@@ -1,0 +1,66 @@
+[user]
+	email = anshuman.goyal@decurtis.com
+	name = Anshuman Goyal
+[alias]
+    st = "status -sb"
+    ll = "log --oneline"
+    last  = "log -1 HEAD --stat"
+	co = checkout
+	bdl = "branch --delete --force"
+	bdr = "push origin --delete --force"
+	br = "branch -av"
+	cm = "commit -m 'DCP-53075: Code Changes'"
+	acp = "!git add -A && git commit -m 'DCP-53075: Code Fix' && git push --set-upstream origin \"$(git rev-parse --abbrev-ref HEAD)\""
+	pu = "!git push --set-upstream origin/\"$(git rev-parse --abbrev-ref HEAD)\""
+ 	update = "!git fetch && git merge origin/\"$(git remote show origin | grep \"HEAD branch\" | cut -d \":\" -f 2 | xargs)\" && git push --set-upstream origin \"$(git rev-parse --abbrev-ref HEAD)\""
+[apply]
+	whitespace = nowarn
+[color]
+	branch = auto
+	diff = auto
+	status = auto
+    ui = true
+[color "branch"]
+	current = yellow reverse
+	local = yellow
+	remote = green
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+[color "status"]
+	added = green bold
+	changed = yellow bold
+	untracked = red bold
+[http]
+	sslVerify = false
+[credential]
+	helper = store
+[core]
+	excludesfile = ~/.gitignore_global
+	autocrlf = input
+	mergeoptions = --no-edit
+	editor = vim
+	pager = less -F -X
+; 	pager = delta
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[commit]
+	template = ~/.stCommitMsg
+[pull]
+	rebase = false
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

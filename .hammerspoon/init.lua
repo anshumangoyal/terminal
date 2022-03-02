@@ -1,0 +1,1 @@
+hs.hotkey.bind({"ctrl", "alt", "cmd"}, "p", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)

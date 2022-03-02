@@ -1,0 +1,671 @@
+#!/bin/zsh -e
+
+# This Function will generate allure report
+function allure-report() {(
+    set -eo pipefail
+
+    if [[ "$#" -eq 1 ]]; then
+        echo -e "${CYAN}allure generate --clean $1${NC}"
+        allure generate --clean "$1"
+    else
+        echo -e "${CYAN}allure generate --clean allure-results/${NC}"
+        allure generate --clean allure-results/
+    fi
+)}
+
+function allure-clean() {(
+    set -eo pipefail
+
+    if [[ -d 'allure-report' ]]; then
+        echo -e "Deleting 'allure-report' directory ..."
+        rm -rf allure-report
+    fi
+    if [[ -d 'allure-results' ]]; then
+        echo -e "Deleting 'allure-results' directory ..."
+        rm -rf allure-results
+    fi
+)}
+
+function python-venv() {(
+    set -eo pipefail
+
+    if [[ "$#" -ne 1 ]]; then
+        echo -e "1st argument as path of requirements.txt file"
+        return
+    fi
+    if [[ ! -f $1 ]]; then
+        return
+    fi
+
+    if [[ ! -z ${VIRTUAL_ENV-} ]]; then
+        echo -e "deactivate virtual environment"
+        deactivate
+    fi
+
+    local PYTHONHTTPSVERIFY=0
+
+    rm -rf venv
+    python3.8 -m pip install --quiet --upgrade pip
+    python3.8 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+
+    python3.8 -m venv venv
+    source venv/bin/activate
+
+    python3.8 -m pip install --quiet --upgrade pip
+    python3.8 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+    python3.8 -m pip install --requirement $1
+
+    # Virtual Env (only when automation-lib is present there)
+    if [[ -d ~/Code/automation-lib ]]; then
+        ln -fs ~/Code/automation-lib/decurtis ~/Code/venv/lib/python3.8/site-packages/
+        ls -l ~/Code/venv/lib/python3.8/site-packages/ | grep decurtis
+    fi
+)}
+
+# Function to update OS Files (Brew in Mac and apt-get in Ubuntu)
+function update-me() {(
+    set -eo pipefail
+
+    OS_FLAVOUR=$(python3 -c "import distro;print(str(distro.name()).lower())")
+    if [[ $OS_FLAVOUR == "darwin" ]]; then
+        echo -e "$OS_FLAVOUR => Updating all packages by brew command"
+        brew cu --all --cleanup --yes
+        brew update
+        brew upgrade --display-times
+        brew cleanup --prune=0
+    elif [[ $OS_FLAVOUR == 'ubuntu' || $OS_FLAVOUR == "debian gnu/linux" ]]; then
+        echo -e "$OS_FLAVOUR => Updating all packages by apt-get command ..."
+        apt-get -qq --assume-yes update
+        apt-get --assume-yes upgrade
+    elif [[ $OS_FLAVOUR == 'centos linux' ]]; then
+        echo -e "$OS_FLAVOUR => Updating all packages by yum command ...${NC}"
+        yum -y update
+    fi
+
+    # Upgrade Google Cloud
+    if (command -v gcloud); then
+        if [[ $(gcloud --version | wc -l) -gt 0 ]]; then
+            export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+            gcloud components update
+        fi
+    fi
+)}
+
+function make-tar() {(
+    set -eo pipefail
+
+    if [[ "$#" -ne 1 ]]; then
+        echo -e "1st argument as folder to compress is needed ..."
+        return
+    fi
+    if [[ ! -d $1 ]]; then
+        echo -e "$1 is not a direcroty ..."
+        return
+    fi
+    tarBall=$1_$(date +%Y_%m_%d_%H_%M_%S).tar.gz
+    echo -e "tar --create --gzip --file=$tarBall $1"
+    sudo tar --create --gzip --file=$tarBall $1
+)}
+
+# Function to get my public ip
+function my-ip() {(
+    set -eo pipefail
+
+    # curl -s ifconfig.me
+    dig +short myip.opendns.com @resolver1.opendns.com
+)}
+
+function encodeUserPass() {(
+    set -eo pipefail
+
+    if [[ "$#" -eq 2 ]]; then
+        encoded=$(echo -n $1:$2 | base64)
+        echo -e "Encoded: $encoded"
+        echo -n $encoded | pbcopy
+    else
+        encoded=$(echo -n $1 | base64)
+        echo -e "Encoded: $encoded"
+        echo -n $encoded | pbcopy
+    fi
+)}
+
+function decodeUserPass() {(
+    set -eo pipefail
+
+    if [[ "$#" -eq 1 ]]; then
+        decoded=$(echo -n $1 | base64 -d)
+        echo -n $decoded | pbcopy
+        echo -e "User: $(echo -n $decoded | cut -d ":" -f1)"
+        echo -e "Pass: $(echo -n $decoded | cut -d ":" -f2)"
+    fi
+)}
+
+function run-in-loop() {(
+    set -eo pipefail
+
+    LOOP_FOR=$1
+    COMMAND_TO_RUN=$2
+    logFile=/tmp/$(date +%T).log
+    >$logFile
+    echo -e "Log File $logFile"
+    for i in $(seq 1 $1); do
+        $COMMAND_TO_RUN >>$logFile 2>&1
+        retVal=$?
+        if [[ $retVal -ne 0 ]]; then
+            echo -e "*** Loop $i of $LOOP_FOR FAILED ***"
+        else
+            echo -e "*** Loop $i of $LOOP_FOR PASSED ***"
+        fi
+    done
+)}
+
+function connectivity-check() {(
+    set -eo pipefail
+
+    if [[ $# -lt 1 ]]; then
+        echo -e "ERROR: 1st argument as IP address and 2nd argument (optional) as iterations is needed !!"
+        return 0
+    fi
+    if [[ $# -eq 2 ]]; then
+        iterations=$2
+    else
+        iterations=10
+    fi
+    for i in $(seq $iterations); do
+        echo -n "$i/$iterations Checking Connectivity for $1:22"
+        if (nc -z -v -w10 $1 22 >/dev/null 2>&1); then
+            echo -e " → Open"
+        else
+            echo -e " → Closed"
+        fi
+        sleep 5
+    done
+)}
+
+function brew-packages() {(
+    set -eo pipefail
+
+    OS_FLAVOUR=$(python3 -c "import distro;print(str(distro.name()).lower())")
+    if [[ ! $OS_FLAVOUR == "darwin" ]]; then
+        echo -e "This Function can only run on Darwin not on $OS_FLAVOUR"
+        return 0
+    fi
+    installed=$(brew list --formula -1)
+    toInstall=(
+        adns allure autoconf automake awk bash bash-completion bc bdw-gc berkeley-db bfg brew-cask-completion brotli
+        c-ares carthage coreutils curl dive docker-completion dos2unix fabric-completion fzf gcc gdbm
+        gettext git gmp gnu-sed gnupg gnutls go grep groovy guile helm icu4c isl jansson jemalloc jpeg jq kompose krb5
+        krew kubectx kubernetes-cli ldns libassuan libcbor libev libevent libffi libfido2 libgcrypt libgpg-error
+        libidn2 libksba libmetalink libmpc libssh2 libtasn1 libtool libunistring libusb libuv libyaml lua lz4 lzo m4
+        mpdecimal mpfr ncurses nettle nghttp2 nmap node npth oniguruma openjdk openldap openssh openssl@3 openvpn
+        p11-kit pcre pcre2 perl pinentry pip-completion pkcs11-helper pkg-config postgresql python@3.8 python@3.9
+        readline rename rtmpdump ruby shyaml speedtest-cli sqlite tcl-tk telnet tree unbound vim watch wget xz yarn
+        yarn-completion yq zlib zsh-completions zstd colima zsh-syntax-highlighting zplug
+    )
+    for t in "${toInstall[@]}"; do
+        install=true
+        for i in $installed; do
+            if [[ $i == $t ]]; then
+                install=false
+                break
+            fi
+        done
+        if [[ $install == true ]]; then
+            echo -e "brew package $t installation in progress ..."
+            if ! (brew install $t >/dev/null); then
+                echo -e "→ brew package $t installation failed"
+            fi
+            installed=$(brew list --formula -1)
+        else
+            echo -e "→ brew package $t already installed ..."
+        fi
+
+    done
+)}
+
+function update-pip-requirements() {(
+    set -eo pipefail
+
+    if [[ $# -ne 1 ]]; then
+        echo -e "1st argument as path to requirements.txt is needed"
+        return 0
+    elif [[ ! -f $1 ]]; then
+        echo -e "Requirements File not Found in $1"
+        return 0
+    fi
+    if [[ -d /tmp/e2e-venv ]]; then
+        rm -rf /tmp/e2e-venv
+    fi
+
+    # Create Temp Virtual Environment
+    python3.8 -m venv /tmp/e2e-venv
+    . /tmp/e2e-venv/bin/activate
+
+    PYTHONHTTPSVERIFY=0
+    python3.8 -m pip install --quiet --upgrade pip setuptools virtualenv wheel twine
+    python3.8 -m pip install --upgrade pyopenssl
+
+    # Patch Requirements File
+    sed -i -E "s|(.*?)==(.*)|\1|g" $1
+
+    # install requirements and freeze
+    python3.8 -m pip install --requirement $1
+    python3.8 -m pip freeze >$1
+
+    sed -i -e "/^pkg-resources*/d" $1
+    sed -i -e "/^pyobjc*/d" $1
+    deactivate
+)}
+
+function dock-run() {(
+    set -eo pipefail
+
+    if [[ $# -ne 2 ]]; then
+        echo -e "Container-Name as 1st and Image-Name as 2nd Argument is Required ..."
+        return 0
+    fi
+
+    # Clean the existing/stale container
+    for container in $(docker ps -a --format '{{ .Names }}'); do
+        if [[ $container = $1 ]]; then
+            echo -e "Removing Docker Container: $1"
+            docker rm --force $1
+        fi
+    done
+
+    # Pull Latest image and Run Docker
+    echo -e "docker run -tdi --rm --privileged --name $1 $2 ..."
+    docker run -tdi --rm --privileged --name $1 $2
+
+    # Check if container is running
+    CONT_RUNNING=false
+    for container in $(docker ps -a --format '{{ .Names }}'); do
+        if [[ $container == $1 ]]; then
+            CONT_RUNNING=true
+        fi
+    done
+
+    # Print the IP Address of Spun Container
+    ip=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $1)
+    echo -e "$1 IP → $ip"
+
+    if [[ $CONT_RUNNING == true ]]; then
+        if [[ -d $HOME/.ssh || -L $HOME/.ssh ]]; then
+            docker cp --archive --follow-link $HOME/.ssh $1:/root/
+        fi
+        if [[ $(docker exec -it $1 find -L /bin -name bash -type f | wc -l) -eq 1 ]]; then
+            docker exec -ti $1 bash
+        else
+            docker exec -ti $1 sh
+        fi
+    else
+        echo $1 FAILED TO START $(docker logs $1)
+        return 1
+    fi
+)}
+
+function dock-stop() {(
+    set -eo pipefail
+
+    if [[ $# -ne 1 ]]; then
+        echo -e "Container to clean as 1st Argument is required ..."
+        return 0
+    fi
+    echo -e "Stopping and Deleting $1 Container ..."
+    docker rm --force $1
+)}
+
+function dock-push() {(
+    set -eo pipefail
+
+    if [[ $# -ne 2 ]]; then
+        echo -e "Two Argument 1st as Container Name and 2nd as Image Name are required !! ..."
+        return 0
+    fi
+    # Check if container exists, stop if running, commit the image and at the end delete the container (if it exists)
+    if [[ $(docker ps -aq -f name="$1") ]]; then
+        if [[ ! $(docker ps -aq -f status=exited -f name="$1") ]]; then
+            docker stop "$1"
+        fi
+        docker commit "$1" "$2"
+        docker push "$2"
+        docker rm --force "$1"
+    fi
+)}
+
+# This function will cleanup stale docker images
+function dock-clean() {(
+    set -eo pipefail
+
+    for TO_REMOVE in $(docker ps --all --quiet --no-trunc --filter status=exited); do
+        echo -e "Removing docker container $TO_REMOVE ..."
+        docker rm --force $TO_REMOVE
+    done
+    for TO_REMOVE in $(docker images --quiet --filter dangling=true); do
+        echo -e "Removing docker image $TO_REMOVE ..."
+        docker rmi $TO_REMOVE
+    done
+    for TO_REMOVE in $(docker volume ls --quiet --filter dangling=true); do
+        echo -e "Removing docker volumes $TO_REMOVE ..."
+        docker rmi $TO_REMOVE
+    done
+)}
+
+# This function will remove a docker container by stopping it
+function dock-remove() {(
+    set -eo pipefail
+
+    if [[ $# -ne 1 ]]; then
+        echo -e "One Argument as Container Name is required !! ..."
+        return 0
+    fi
+    # Check if container exists, stop if running, commit the image and at the end delete the container (if it exists)
+    if [[ $(docker ps -aq -f name="$1") ]]; then
+        if [[ ! $(docker ps -aq -f status=exited -f name="$1") ]]; then
+            echo -e "Deleting Container $1 !! ..."
+            docker rm --force "$1"
+        fi
+    fi
+)}
+
+function docker-build() {(
+    set -eo pipefail
+
+    if [[ $# -ne 1 ]]; then
+        echo -e "1st Argument as path to Docker File is needed !! ..."
+        return 0
+    fi
+    IMAGE_NAME=$(grep "IMAGE_NAME" $1 | cut -d "=" -f2 | sed s/\'//g)
+    CMD="docker build --pull --network=host --build-arg BUILD_NUMBER=$BUILD_NUMBER --file $1 -t $IMAGE_NAME ."
+    echo -e "$CMD"
+    $CMD
+    echo -e "WARNING Docker Push image $IMAGE_NAME, press y to continue"
+    read RESPONSE
+    if [[ $RESPONSE == "y" || $RESPONSE = "Y" ]]; then
+        docker push $IMAGE_NAME
+    else
+        echo -e "Skipped ..."
+    fi
+)}
+
+function dock-compose() {(
+    set -eo pipefail
+
+    if [[ $# -ne 2 ]]; then
+        echo -e "1st argument as file and 2nd as action is needed !!"
+        return
+    fi
+
+    if [[ $1 == 'builds' ]]; then
+        file=$(find $HOME/Code -name "docker-compose-builds.yaml" -type f | tail -n 1)
+        project="builds"
+    elif [[ $1 == 'jenkins' ]]; then
+        file=$(find $HOME/Code -name "docker-compose-jenkins.yaml" -type f | tail -n 1)
+        project="jenkins"
+    elif [[ $1 == 'flask' ]]; then
+        file=$(find $HOME/Code -name "docker-compose-flask.yaml" -type f | tail -n 1)
+        project="flask"
+    elif [[ $1 == 'maintenance' ]]; then
+        file=$(find $HOME/Code -name "docker-compose-maintenance.yaml" -type f | tail -n 1)
+        project="maintenance"
+    fi
+
+    if [[ ! -f $1 ]]; then
+        echo -e "$1 not found !!"
+        return
+    fi
+
+    if [[ $2 == 'up' ]]; then
+        echo -e "docker compose --file $1 --project-name $project pull"
+        docker compose --file $1 --project-name $project pull
+
+        echo -e "docker compose --file $1 --project-name $project up --detach --quiet-pull"
+        docker compose --file $1 --project-name $project up --detach --quiet-pull
+    elif [[ $2 == 'down' ]]; then
+        echo -e "docker compose --file $1 down --project-name $project --volumes --rmi local"
+        docker compose --file $1 --project-name $project down --volumes --rmi local
+    else
+        echo -e "$2 is not supported !!"
+        return
+    fi
+
+    if [[ $2 == 'up' && $1 =~ 'docker-compose-builds.yaml' ]]; then
+        echo -e "docker exec -it builds bash"
+        docker exec -it builds bash
+    elif [[ $2 == 'up' && $1 =~ 'docker-compose-maintenance.yaml' ]]; then
+        echo -e "docker exec -it maintenance bash"
+        docker exec -it maintenance bash
+    fi
+)}
+
+function docker-pull-images() {(
+    set -eo pipefail
+
+    for image in $(docker images --filter dangling=false --format '{{ .Repository }}:{{ .Tag }}'); do
+        echo -e "Pulling image $image"
+        docker pull $image
+    done
+)}
+
+function docker-fix-permission() {(
+    set -eo pipefail
+
+    sudo chmod 777 /var/run/docker.sock
+)}
+
+function update-docker-compose() {(
+    set -eo pipefail
+
+    OS_TYPE=$(uname -a | awk '/^(.*?)[[:blank:]]/{print tolower($1)}')
+    OS_FLAVOUR=$(python3 -c "import distro;print(str(distro.name()).lower())")
+
+    if [[ $OS_TYPE == 'darwin' || $OS_FLAVOUR == 'darwin' ]]; then
+        file_name="docker-compose-darwin-aarch64"
+    else
+        file_name=docker-compose-$(uname -s)-$(uname -m)
+    fi
+
+    version=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq --raw-output .tag_name)
+    if [[ -f $HOME/.docker/cli-plugins/docker-compose ]]; then
+        installed=$(docker compose version | awk '{print $4}')
+        if [[ $installed == $version ]]; then
+            return 0
+        fi
+    else
+        mkdir -p $HOME/.docker/cli-plugins/
+    fi
+    curl -fSsL "https://github.com/docker/compose/releases/download/$version/$file_name" -o $HOME/.docker/cli-plugins/docker-compose
+    chmod +x ~/.docker/cli-plugins/docker-compose
+    docker compose version
+)}
+
+# Clean non-tracked Files
+function git-clean() {(
+    set -eo pipefail
+
+    git clean -d -x --dry-run --exclude .run --exclude .idea
+    echo -e "Delete all these files Y/N ??"
+    read RESPONSE
+    if [[ $RESPONSE == "y" || $RESPONSE = "Y" ]]; then
+        git clean -d -x --force --exclude .run --exclude .idea
+    fi
+)}
+
+function git-clone() {(
+    set -eo pipefail
+
+    if [[ "$#" -ne 1 ]]; then
+        echo -e "Git Repo to clone to be passed as 1st argument ..."
+        return 0
+    fi
+    if [[ -d $1 ]]; then
+        echo -e "Removing Existing Folder $1 ..."
+        rm -rf $1
+    fi
+    remote="github-dc"
+    echo -e "CloneCmd → 'git clone git@$remote:decurtis/$1.git' ..."
+    git clone git@$remote:decurtis/$1.git
+)}
+
+function git-zombies() {(
+    set -eo pipefail
+
+    git fetch --prune
+    REMOTE_BRANCHES=$(git ls-remote 2>&1 | grep 'refs/heads' | grep -v '>' | grep -v master | xargs -L1 | cut -d"/" -f3- | sort -u)
+    LOCAL_BRANCHES=$(git branch | awk -F ' +' '! /\(no branch\)/ {print $2}' | grep -E -v "(^\*|master|dev)")
+    CI_BRANCH_DELETED=false
+    while IFS= read -r LOCAL_BRANCH; do
+        TO_DELETE=true
+        while IFS= read -r REMOTE_BRANCH; do
+            if [[ $REMOTE_BRANCH == "$LOCAL_BRANCH" ]]; then
+                TO_DELETE=false
+            fi
+        done <<< "$REMOTE_BRANCHES"
+        if [[ $TO_DELETE == true ]]; then
+            if [[ $LOCAL_BRANCH = "DCP-53075-Ci-Enhancements" ]]; then
+                CI_BRANCH_DELETED=true
+            fi
+            echo -e "Deleting Branch $LOCAL_BRANCH ..."
+            git branch --delete --force "$LOCAL_BRANCH"
+            git remote prune origin
+        fi
+    done <<< "$LOCAL_BRANCHES"
+    if [[ $CI_BRANCH_DELETED == true ]]; then
+        echo -e "DCP-53075-Ci-Enhancements Was Deleted Re-Creating ..."
+        git checkout -b DCP-53075-Ci-Enhancements origin/master
+        git push -f origin DCP-53075-Ci-Enhancements
+    fi
+)}
+
+function git-sync() {(
+    set -eo pipefail
+
+    HEAD=$(git remote show origin | grep "HEAD branch" | cut -d ":" -f 2 | xargs)
+    STASHED=false
+    CURRENT_BRANCH=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    if [[ $CURRENT_BRANCH != $HEAD ]]; then
+        echo -e "Stashing and checking out $HEAD ..."
+        if [[ $(git status -s | wc -l) -ne 0 ]]; then
+            echo -e "stashing changes ..."
+            git stash >/dev/null 2>&1
+            STASHED=true
+        fi
+        git checkout $HEAD
+    fi
+    echo -e "fetching and pulling from origin/$HEAD ..."
+    git fetch --prune >/dev/null 2>&1
+    git pull >/dev/null 2>&1
+    echo -e "checking out to $CURRENT_BRANCH ..."
+    git checkout "$CURRENT_BRANCH"
+    echo -e "Removing Zombies ..."
+    git-zombies
+    if [[ $CURRENT_BRANCH != $HEAD ]]; then
+        git pull >/dev/null 2>&1
+        echo -e "Merging $CURRENT_BRANCH with $HEAD ..."
+        git merge --no-message --commit origin/$HEAD
+        if [[ $STASHED == true ]]; then
+            echo -e "Un-Stashing Changes ..."
+            git stash pop >/dev/null 2>&1
+        else
+            echo -e "Pushing Changes to $CURRENT_BRANCH"
+            git push -u origin $CURRENT_BRANCH
+        fi
+    fi
+)}
+
+# Perform a git push of the current branch we are in
+function git-push() {(
+    set -eo pipefail
+
+    branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    echo -e "Push commits to origin/$branch ..."
+    git push -u origin "$branch"
+)}
+
+function git-push-force() {(
+    set -eo pipefail
+
+    branch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    echo -e "Force Push commits to origin/$branch ..."
+    git push -f origin "$branch"
+)}
+
+function git-mirror() {(
+    set -eo pipefail
+
+    if [[ "$#" -ne 2 ]]; then
+        echo -e "1st argument as Source Git URL and 2nd as Destination Git URL is needed"
+        return 0
+    fi
+    directory="/tmp/$(openssl rand -base64 12)"
+    if [[ -d $directory ]]; then
+        rm -rf $directory
+    fi
+    echo -e "SRC: $1"
+    echo -e "DST: $2"
+    echo -e "WORKDIR: $directory"
+    mkdir -p $directory
+
+    cd $directory
+    git clone --quiet --mirror $1 .
+    git remote add upstream $2
+    git push upstream --mirror --force
+    rm -rf $directory
+)}
+
+function git-tag-create() {(
+    set -eo pipefail
+
+    branch=$(git rev-parse --abbrev-ref HEAD)
+    tag=$(date +%d-%b-%Y-%H_%M_%S)
+    git tag --annotate --force $tag --message "Tag $tag Created on Branch $branch [skip ci]"
+    git push --follow-tags --set-upstream origin $branch
+)}
+
+function kdp() {(
+    set -eo pipefail
+
+    if [[ $# -ne 1 ]]; then
+        echo -e "1st ARG as Pod name is needed !!"
+        return 0
+    fi
+    echo -e "kubectl describe pod $1"
+    kubectl describe pod $1
+)}
+
+function kec() {(
+    set -eo pipefail
+
+    if [[ $# -ne 1 ]]; then
+        echo -e "1st ARG as Pod name is needed !!"
+        return 0
+    fi
+    for container in $(kubectl get pods $1 -o jsonpath='{.spec.containers[*].name}'); do
+        if [[ $container == 'jnlp' ]]; then
+    		continue
+        else
+            if [[ $(kubectl exec -it $1 --container=$container -- find -L /bin -name bash -type f | wc -l) -eq 1 ]]; then
+                echo -e "kec: kubectl exec --stdin --tty $1 --container=$container -- /bin/bash"
+                kubectl exec --stdin --tty $1 --container=$container -- /bin/bash
+            else
+                echo -e "kec: kubectl exec --stdin --tty $1 --container=$container -- /bin/sh"
+                kubectl exec --stdin --tty $1 --container=$container -- /bin/sh
+            fi
+        fi
+		break
+	done
+)}
+
+function update-tokens() {(
+    set -eo pipefail;
+
+    if [[ ! -d $GCS_VOLUME ]]; then
+        mkdir -p $GCS_VOLUME
+    fi
+    toUpdate=(msTeamsUserToken.yaml creds.yaml nsToIgnore.yaml)
+    for s in "${toUpdate[@]}"; do
+        echo -e "Copying $s → $GCS_VOLUME/"
+        echo -e "gsutil -qm cp -r gs://ci-team-data/$s $GCS_VOLUME/"
+        gsutil -qm cp -r gs://ci-team-data/"$s" "$GCS_VOLUME"/
+    done
+)}
