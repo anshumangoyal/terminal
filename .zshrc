@@ -156,7 +156,6 @@ if [[ -f $PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zs
     source $PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
 fi
 
-export JENKINS_URL="https://jenkinsci.dxp-decurtis.com/"
 export JENKINS_HOME="/var/lib/jenkins"
 export E2E_PASSWORD='7735R!U-qN#r'
 export LOG_LEVEL='INFO'
