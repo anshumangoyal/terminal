@@ -35,7 +35,7 @@ for s in "${binaryFiles[@]}"; do
     ln -fs "$CWD/$s" "$HOME/$s"
 done
 
-binaryDirs=(.fzf .hammerspoon)
+binaryDirs=(.fzf .hammerspoon .krew)
 for s in "${binaryDirs[@]}"; do
     # delete existing
     if [[ -d "$HOME/$s" || -L "$HOME/$s" || -e "$HOME/$s" ]]; then
