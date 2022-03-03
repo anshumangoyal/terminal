@@ -140,16 +140,16 @@ for s in "${addPaths[@]}"; do
 done
 
 # Source Functions
-if [[ -f ~/Code/bash/.func_profile ]]; then
-    source ~/Code/bash/.func_profile
+if [[ -f ~/Code/terminal/.func_profile ]]; then
+    source ~/Code/terminal/.func_profile
 fi
 
 # Source FZF (Fuzzy)
-if [[ -f $HOME/Code/bash/.fzf/completion.zsh ]]; then
-    source "$HOME/Code/bash/.fzf/completion.zsh" 2>/dev/null
+if [[ -f $HOME/Code/terminal/.fzf/completion.zsh ]]; then
+    source "$HOME/Code/terminal/.fzf/completion.zsh" 2>/dev/null
 fi
-if [[ -f $HOME/Code/bash/.fzf/key-bindings.zsh ]]; then
-    source "$HOME/Code/bash/.fzf/key-bindings.zsh" 2>/dev/null
+if [[ -f $HOME/Code/terminal/.fzf/key-bindings.zsh ]]; then
+    source "$HOME/Code/terminal/.fzf/key-bindings.zsh" 2>/dev/null
 fi
 
 if [[ -f $PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc ]]; then
