@@ -75,7 +75,7 @@ zstyle ':omz:update' frequency 13
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
     git brew kubectl docker zsh-autosuggestions zsh-syntax-highlighting zsh-completions zsh-history-substring-search
-    git-flow-completion autojump
+    git-flow-completion
 )
 
 # User configuration
