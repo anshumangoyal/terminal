@@ -112,7 +112,12 @@ export PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/substring
 if [[ $(uname -p) == 'arm' ]]; then
     PATH=$PATH:/opt/homebrew/bin
 fi
-PREFIX=$(brew --prefix)
+
+if [[ $(python3 -c "import distro;print(str(distro.name()).lower())") == "darwin" ]]; then
+    PREFIX=$(brew --prefix)
+else
+    PREFIX=/usr/bin
+fi
 
 export FPATH="$PREFIX/share/zsh/site-functions:$FPATH"
 source $ZSH/oh-my-zsh.sh
