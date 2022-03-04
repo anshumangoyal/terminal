@@ -290,7 +290,7 @@ function dock-run() {(
     echo -e "$1 IP → $ip"
 
     if [[ $CONT_RUNNING == true ]]; then
-        if [[ -d $HOME/.ssh || -L $HOME/.ssh ]] && [[ $(whoami) != 'root' ]]; then
+        if [[ -d $HOME/.ssh || -L $HOME/.ssh ]]; then
             docker cp --archive --follow-link $HOME/.ssh $1:/root/
         fi
         if [[ $(docker exec -it $1 find -L /bin -name bash -type f | wc -l) -eq 1 ]]; then
