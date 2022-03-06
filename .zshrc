@@ -125,6 +125,7 @@ source $ZSH/oh-my-zsh.sh
 unset PATH
 addPaths=(
     $PREFIX/opt/gnu-sed/libexec/gnubin
+    $PREFIX/opt/curl/bin
     $PREFIX/opt/grep/libexec/gnubin
     $PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
     $PREFIX/opt/python@3.8/bin
