@@ -669,3 +669,29 @@ function update-tokens() {(
         gsutil -qm cp -r gs://ci-team-data/"$s" "$GCS_VOLUME"/
     done
 )}
+
+function git-pull-latest-code() {(
+    # Git Pull Latest Code, for all Repos in ~/Code
+    set -eo pipefail;
+
+    for i in $(find ~/Code -type d -maxdepth 1); do
+        if [[ -d "$i/.git" ]]; then
+            cd $i
+            if [[ $(git status --short | wc -l) -gt 0 ]]; then
+                continue
+            fi
+            if [[ $(git remote -v | awk '{ print $1 }' | uniq) == 'origin' ]]; then
+                remote=$(git remote show origin | grep "HEAD branch" | cut -d ":" -f 2 | xargs)
+                remoteHash=$(git log -1 --pretty=%H origin/$remote)
+                localHash=$(git log -1 --pretty=%H)
+                if [[ $remoteHash != $localHash ]]; then
+                    if (git pull >/dev/null 2>&1); then
+                        echo "😀 → $i"
+                    else
+                        echo "🥵 → $i"
+                    fi
+                fi
+            fi
+        fi
+    done
+)}
