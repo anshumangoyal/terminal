@@ -75,7 +75,7 @@ zstyle ':omz:update' frequency 13
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
     git brew kubectl docker zsh-autosuggestions zsh-syntax-highlighting zsh-completions zsh-history-substring-search
-    git-flow-completion autojump
+    git-flow-completion
 )
 
 # User configuration
@@ -112,7 +112,12 @@ export PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/substring
 if [[ $(uname -p) == 'arm' ]]; then
     PATH=$PATH:/opt/homebrew/bin
 fi
-PREFIX=$(brew --prefix)
+
+if [[ $(python3 -c "import distro;print(str(distro.name()).lower())") == "darwin" ]]; then
+    PREFIX=$(brew --prefix)
+else
+    PREFIX=/usr/bin
+fi
 
 export FPATH="$PREFIX/share/zsh/site-functions:$FPATH"
 source $ZSH/oh-my-zsh.sh
@@ -120,6 +125,7 @@ source $ZSH/oh-my-zsh.sh
 unset PATH
 addPaths=(
     $PREFIX/opt/gnu-sed/libexec/gnubin
+    $PREFIX/opt/curl/bin
     $PREFIX/opt/grep/libexec/gnubin
     $PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
     $PREFIX/opt/python@3.8/bin

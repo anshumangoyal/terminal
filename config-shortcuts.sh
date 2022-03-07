@@ -12,13 +12,15 @@ if [[ ! -d $HOME/.oh-my-zsh ]]; then
     exit 0
 fi
 
-for FILE in $(ls Preferences/); do
-    if [[ -f ~/Library/Preferences/$FILE ]]; then
-        echo "Deleting ~/Library/Preferences/$FILE ..."
-        rm -rf ~/Library/Preferences/$FILE
-    fi
-    cp -p Preferences/$FILE ~/Library/Preferences/$FILE
-done
+if [[ $(python3 -c "import distro;print(str(distro.name()).lower())") == "darwin" ]]; then
+    for FILE in $(ls Preferences/); do
+        if [[ -f ~/Library/Preferences/$FILE ]]; then
+            echo "Deleting ~/Library/Preferences/$FILE ..."
+            rm -rf ~/Library/Preferences/$FILE
+        fi
+        cp -p Preferences/$FILE ~/Library/Preferences/$FILE
+    done
+fi
 
 binaryFiles=(.func_profile .gitconfig .gitignore_global .vimrc .zshrc)
 for s in "${binaryFiles[@]}"; do

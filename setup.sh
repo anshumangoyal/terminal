@@ -74,11 +74,15 @@ function brew-formula() {(
     fi
 )}
 formulaToInstall=(
-    allure autoconf automake awk bash bash-completion bc brew-cask-completion carthage coreutils curl docker-completion
-    dos2unix fabric-completion fzf gcc gdbm git gnu-sed gnupg grep groovy guile helm jq krew kubectx kubernetes-cli
-    libev libevent libidn2 libmetalink libssh2 libunistring libusb libyaml libyaml lua pip-completion postgresql
-    python@3.8 readline ruby shyaml sqlite telnet tree vim wget xz yarn yarn-completion yq zlib zsh-completions
-    unixodbc msodbcsql17 mssql-tools re2
+    adns allure autoconf automake awk bash bash-completion bc bdw-gc berkeley-db bfg brew-cask-completion brotli
+    c-ares carthage coreutils curl dive docker-completion dos2unix fabric-completion fzf gcc gdbm
+    gettext git gmp gnu-sed gnupg gnutls go grep groovy guile helm icu4c isl jansson jemalloc jpeg jq kompose krb5
+    krew kubectx kubernetes-cli ldns libassuan libcbor libev libevent libffi libfido2 libgcrypt libgpg-error
+    libidn2 libksba libmetalink libmpc libssh2 libtasn1 libtool libunistring libusb libuv libyaml lua lz4 lzo m4
+    mpdecimal mpfr ncurses nettle nghttp2 nmap node npth oniguruma openjdk openldap openssh openssl@3 openvpn
+    p11-kit pcre pcre2 perl pinentry pip-completion pkcs11-helper pkg-config postgresql python@3.8 python@3.9
+    readline rename rtmpdump ruby shyaml speedtest-cli sqlite tcl-tk telnet tree unbound vim watch wget xz yarn
+    yarn-completion yq zlib zsh-completions zstd colima zsh-syntax-highlighting zplug
 )
 for p in "${formulaToInstall[@]}"; do
     brew-formula $p
