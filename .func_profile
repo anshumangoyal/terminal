@@ -260,8 +260,8 @@ function update-pip-requirements() {(
 function dock-run() {(
     set -eo pipefail
 
-    if [[ $# -ne 2 ]]; then
-        echo -e "Container-Name as 1st and Image-Name as 2nd Argument is Required ..."
+    if [[ $# -lt 2 ]]; then
+        echo -e "Command Syntax: dock-run <container-name> <image-name> <yes/no copy ssh keys> ..."
         return 0
     fi
 
@@ -290,8 +290,8 @@ function dock-run() {(
     echo -e "$1 IP → $ip"
 
     if [[ $CONT_RUNNING == true ]]; then
-        if [[ -d $HOME/.ssh || -L $HOME/.ssh ]]; then
-            docker cp --archive --follow-link $HOME/.ssh $1:/root/
+        if [[ -d $HOME/.ssh || -L $HOME/.ssh ]] && [[ $# -gt 2 ]] && [[ $3 == 'yes' ]]; then
+              docker cp --archive --follow-link $HOME/.ssh $1:/root/
         fi
         if [[ $(docker exec -it $1 find -L /bin -name bash -type f | wc -l) -eq 1 ]]; then
             docker exec -ti $1 bash
