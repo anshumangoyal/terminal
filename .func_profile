@@ -291,6 +291,13 @@ function dock-run() {(
 
     docker cp --archive --follow-link ~/Code/terminal/.func_profile $1:/root/
     docker exec -it $1 /bin/bash -c 'echo "source /root/.func_profile" >>/root/.bashrc'
+    release=$(docker exec -it $1 /bin/bash -c 'cat /etc/*release | grep -E "^ID" | cut -d "=" -f2')
+    if [[ $release =~ 'debian' ]]; then
+        echo "release=release"
+        docker exec -it $1 /bin/bash -c 'apt-get update'
+        docker exec -it $1 /bin/bash -c 'apt-get -y upgrade'
+        docker exec -it $1 /bin/bash -c 'apt-get install -y vim curl git openssh-server'
+    fi
 
     if [[ $CONT_RUNNING == true ]]; then
         if [[ -d $HOME/.ssh || -L $HOME/.ssh ]] && [[ $# -gt 2 ]] && [[ $3 == 'yes' ]]; then
