@@ -289,6 +289,9 @@ function dock-run() {(
     ip=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $1)
     echo -e "$1 IP → $ip"
 
+    docker cp --archive --follow-link ~/Code/terminal/.func_profile $1:/root/
+    docker exec -it $1 /bin/bash -c 'echo "source /root/.func_profile" >>/root/.bashrc'
+
     if [[ $CONT_RUNNING == true ]]; then
         if [[ -d $HOME/.ssh || -L $HOME/.ssh ]] && [[ $# -gt 2 ]] && [[ $3 == 'yes' ]]; then
               docker cp --archive --follow-link $HOME/.ssh $1:/root/
