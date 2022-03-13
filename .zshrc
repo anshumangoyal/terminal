@@ -145,6 +145,8 @@ for s in "${addPaths[@]}"; do
     fi
 done
 
+eval "$(brew shellenv)"
+
 # Source Functions
 if [[ -f ~/Code/terminal/.func_profile ]]; then
     source ~/Code/terminal/.func_profile
