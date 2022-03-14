@@ -145,7 +145,9 @@ for s in "${addPaths[@]}"; do
     fi
 done
 
-eval "$(brew shellenv)"
+if [[ $(uname -s) == 'Darwin' ]]; then
+    eval "$(brew shellenv)"
+fi
 
 # Source Functions
 if [[ -f ~/Code/terminal/.func_profile ]]; then
