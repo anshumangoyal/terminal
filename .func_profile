@@ -75,8 +75,9 @@ function update-me() {(
         brew cleanup --prune=0
     elif [[ $OS_FLAVOUR == 'ubuntu' || $OS_FLAVOUR == "debian gnu/linux" ]]; then
         echo -e "$OS_FLAVOUR => Updating all packages by apt-get command ..."
-        apt-get -qq --assume-yes update
-        apt-get --assume-yes upgrade
+        sudo -v
+        sudo apt-get -qq --assume-yes update
+        sudo apt-get --assume-yes upgrade
     elif [[ $OS_FLAVOUR == 'centos linux' ]]; then
         echo -e "$OS_FLAVOUR => Updating all packages by yum command ...${NC}"
         yum -y update
