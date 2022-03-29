@@ -618,7 +618,7 @@ function git-mirror() {(
     mkdir -p $directory
 
     cd $directory
-    git clone --quiet --mirror $1 .
+    git clone --quiet --bare $1 .
     git remote add upstream $2
     git push upstream --mirror --force
     rm -rf $directory
