@@ -103,6 +103,7 @@ export LANG=en_US.UTF-8
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias k="kubectl"
+alias kx="kubectx"
 alias d="docker"
 alias kgp="kubectl get pods"
 alias echo="echo -e"
