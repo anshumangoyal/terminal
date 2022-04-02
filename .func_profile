@@ -45,20 +45,20 @@ function python-venv() {(
     local PYTHONHTTPSVERIFY=0
 
     rm -rf venv
-    python3.8 -m pip install --quiet --upgrade pip
-    python3.8 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+    python3.9 -m pip install --quiet --upgrade pip
+    python3.9 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
 
-    python3.8 -m venv venv
+    python3.9 -m venv venv
     source venv/bin/activate
 
-    python3.8 -m pip install --quiet --upgrade pip
-    python3.8 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
-    python3.8 -m pip install --requirement $1
+    python3.9 -m pip install --quiet --upgrade pip
+    python3.9 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+    python3.9 -m pip install --requirement $1
 
     # Virtual Env (only when automation-lib is present there)
     if [[ -d ~/Code/automation-lib ]]; then
-        ln -fs ~/Code/automation-lib/decurtis ~/Code/venv/lib/python3.8/site-packages/
-        ls -l ~/Code/venv/lib/python3.8/site-packages/ | grep decurtis
+        ln -fs ~/Code/automation-lib/decurtis ~/Code/venv/lib/python3.9/site-packages/
+        ls -l ~/Code/venv/lib/python3.9/site-packages/ | grep decurtis
     fi
 )}
 
@@ -239,19 +239,19 @@ function update-pip-requirements() {(
     fi
 
     # Create Temp Virtual Environment
-    python3.8 -m venv /tmp/e2e-venv
+    python3.9 -m venv /tmp/e2e-venv
     . /tmp/e2e-venv/bin/activate
 
     PYTHONHTTPSVERIFY=0
-    python3.8 -m pip install --quiet --upgrade pip setuptools virtualenv wheel twine
-    python3.8 -m pip install --upgrade pyopenssl
+    python3.9 -m pip install --quiet --upgrade pip setuptools virtualenv wheel twine
+    python3.9 -m pip install --upgrade pyopenssl
 
     # Patch Requirements File
     sed -i -E "s|(.*?)==(.*)|\1|g" $1
 
     # install requirements and freeze
-    python3.8 -m pip install --requirement $1
-    python3.8 -m pip freeze >$1
+    python3.9 -m pip install --requirement $1
+    python3.9 -m pip freeze >$1
 
     sed -i -e "/^pkg-resources*/d" $1
     sed -i -e "/^pyobjc*/d" $1
