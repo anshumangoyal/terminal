@@ -706,3 +706,22 @@ function git-pull-latest-code() {(
         fi
     done
 )}
+
+function dock-build() {(
+    set -eo pipefail;
+
+    if [[ $# -ne 1 ]]; then
+        echo "1st Argument as path to Docker File is needed !! ..."
+    else
+        IMAGE_NAME=$(grep "IMAGE_NAME" $1 | cut -d "=" -f2 | sed s/\'//g)
+        docker build --pull --network=host --file $1 --tag $IMAGE_NAME .
+        echo "WARNING Docker Push image $IMAGE_NAME, press y to continue"
+        read RESPONSE
+        if [[ $RESPONSE = "y" ]] || [[ $RESPONSE = "Y" ]]; then
+            docker push $IMAGE_NAME
+        else
+            echo "Skipped ..."
+            return
+        fi
+    fi
+)}
