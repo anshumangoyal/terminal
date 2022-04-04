@@ -181,3 +181,9 @@ export PROMPT_EOL_MARK=''
 if [[ -f ~/Code/venv/bin/activate ]]; then
     source ~/Code/venv/bin/activate
 fi
+
+if [[ -d ~/Code ]]; then
+    cd ~/Code
+else
+    cd ~
+fi
