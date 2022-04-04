@@ -45,20 +45,27 @@ function python-venv() {(
     local PYTHONHTTPSVERIFY=0
 
     rm -rf venv
-    python3.9 -m pip install --quiet --upgrade pip
-    python3.9 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+    if $(timeout 1 bash -c 'cat < /dev/null > /dev/tcp/172.16.1.2/443'); then
+        PYTHON_VER=python3.8
+    else
+        PYTHON_VER=python3.9
+    fi
+    echo "Using $PYTHON_VER for installation ..."
 
-    python3.9 -m venv venv
+    $PYTHON_VER -m pip install --quiet --upgrade pip
+    $PYTHON_VER -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+
+    $PYTHON_VER -m venv venv
     source venv/bin/activate
 
-    python3.9 -m pip install --quiet --upgrade pip
-    python3.9 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
-    python3.9 -m pip install --requirement $1
+    $PYTHON_VER -m pip install --quiet --upgrade pip
+    $PYTHON_VER -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+    $PYTHON_VER -m pip install --requirement $1
 
     # Virtual Env (only when automation-lib is present there)
     if [[ -d ~/Code/automation-lib ]]; then
-        ln -fs ~/Code/automation-lib/decurtis ~/Code/venv/lib/python3.9/site-packages/
-        ls -l ~/Code/venv/lib/python3.9/site-packages/ | grep decurtis
+        ln -fs ~/Code/automation-lib/decurtis ~/Code/venv/lib/$PYTHON_VER/site-packages/
+        ls -l ~/Code/venv/lib/$PYTHON_VER/site-packages/ | grep decurtis
     fi
 )}
 
@@ -238,20 +245,27 @@ function update-pip-requirements() {(
         rm -rf /tmp/e2e-venv
     fi
 
+    if $(timeout 1 bash -c 'cat < /dev/null > /dev/tcp/172.16.1.2/443'); then
+        PYTHON_VER=python3.8
+    else
+        PYTHON_VER=python3.9
+    fi
+    echo "Using $PYTHON_VER for installation ..."
+
     # Create Temp Virtual Environment
-    python3.9 -m venv /tmp/e2e-venv
+    $PYTHON_VER -m venv /tmp/e2e-venv
     . /tmp/e2e-venv/bin/activate
 
     PYTHONHTTPSVERIFY=0
-    python3.9 -m pip install --quiet --upgrade pip setuptools virtualenv wheel twine
-    python3.9 -m pip install --upgrade pyopenssl
+    $PYTHON_VER -m pip install --quiet --upgrade pip setuptools virtualenv wheel twine
+    $PYTHON_VER -m pip install --upgrade pyopenssl
 
     # Patch Requirements File
     sed -i -E "s|(.*?)==(.*)|\1|g" $1
 
     # install requirements and freeze
-    python3.9 -m pip install --requirement $1
-    python3.9 -m pip freeze >$1
+    $PYTHON_VER -m pip install --requirement $1
+    $PYTHON_VER -m pip freeze >$1
 
     sed -i -e "/^pkg-resources*/d" $1
     sed -i -e "/^pyobjc*/d" $1
