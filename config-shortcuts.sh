@@ -80,5 +80,3 @@ done
 if [[ $installDistro == true ]]; then
     python3 -m pip install distro
 fi
-
-source $CWD/install-plugins.sh

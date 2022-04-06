@@ -54,3 +54,5 @@ else
         unzip -o /tmp/fzf.zip -d ~/.fzf/
     fi
 fi
+
+rm -rf ~/.krew/bin/LICENSE* ~/.krew/bin/README*
