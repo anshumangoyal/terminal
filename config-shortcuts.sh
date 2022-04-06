@@ -80,3 +80,40 @@ done
 if [[ $installDistro == true ]]; then
     python3 -m pip install distro
 fi
+
+# kubectx & kubens
+version=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | jq --raw-output .tag_name)
+if [[ -f ~/.krew/bin/kubectl-ns && "v$(kubectl ns --version)" == "$version" ]]; then
+    echo "kubectl-ns is on latest version :)"
+else
+    curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_$(uname -s)_$(uname -m).tar.gz" | tar -C ~/.krew/bin/ -xz;
+    mv ~/.krew/bin/kubens ~/.krew/bin/kubectl-ns
+fi
+
+if [[ -f ~/.krew/bin/kubectx && "v$(kubectx --version)" == "$version" ]]; then
+    echo "kubectx is on latest version :)"
+else
+    curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_$(uname -s)_$(uname -m).tar.gz" | tar -C ~/.krew/bin/ -xz;
+fi
+
+# kubectl-images
+if [[ $(uname -s) == 'Linux' ]]; then
+    platform=$(uname -r | grep -o '[^-]*$')
+elif [[ $(uname -s) == 'Darwin' ]]; then
+    platform=$(uname -a | grep -o '[^ ]*$')
+fi
+version=$(curl -s https://api.github.com/repos/chenjiandongx/kubectl-images/releases/latest | jq --raw-output .tag_name)
+curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_$(uname -s)_$platform.tar.gz" | tar -C ~/.krew/bin/ -xz;
+chmod +x ~/.krew/bin/kubectl-images
+kubectl-images --version
+
+# kubectl-tail
+if [[ $(uname -s) == 'Linux' ]]; then
+    curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_linux_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+elif [[ $(uname -s) == 'Darwin' ]]; then
+    curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_darwin_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+fi
+mv ~/.krew/bin/kail ~/.krew/bin/kubectl-tail
+chmod +x ~/.krew/bin/kubectl-tail
+rm -rf ~/.krew/bin/*.txt ~/.krew/bin/*.md
+
