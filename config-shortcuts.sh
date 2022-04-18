@@ -7,7 +7,7 @@ export PATH=/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:/sbin:/usr/sbin:/usr/
 CWD=$(dirname $(realpath $0))
 
 if [[ ! -d $HOME/.oh-my-zsh ]]; then
-    echo "sh -c \$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    echo "sh -c \"\$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
     echo "Run this command to install Oh My Zsh !!"
     exit 0
 fi
