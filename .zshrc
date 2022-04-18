@@ -182,6 +182,16 @@ if [[ -f ~/Code/venv/bin/activate ]]; then
     source ~/Code/venv/bin/activate
 fi
 
+# helm auto completion
+if (command -v helm >/dev/null 2>&1); then
+	source <(helm completion zsh)
+fi
+
+# gcloud auto completion
+if (command -v gcloud >/dev/null 2>&1); then
+	source <(gcloud completion zsh)
+fi
+
 if [[ -d ~/Code ]]; then
     cd ~/Code
 else

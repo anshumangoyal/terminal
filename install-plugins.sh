@@ -44,8 +44,8 @@ fi
 # ***** kubectl ****
 echo "installing kubectl ..."
 version=$(curl -fSsL https://dl.k8s.io/release/stable.txt)
-curl -fSsL "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl" -o /usr/bin/kubectl
-chmod +x /usr/bin/kubectl
+curl -fSsL "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl" -o /usr/kubectl
+chmod +x /usr/kubectl
 
 # ***** Deleting Temp Files *****
 rm -rf ~/.krew/bin/LICENSE* ~/.krew/bin/README*
