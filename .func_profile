@@ -739,3 +739,8 @@ function dock-build() {(
         fi
     fi
 )}
+
+function passwd_gen() {(
+    set -eo pipefail;
+    pwgen -1 --capitalize --numerals --symbols --secure 20 | pbcopy
+)}
