@@ -562,6 +562,35 @@ function git-zombies() {(
     fi
 )}
 
+function git-update-repos() {(
+    set -eo pipefail
+
+    for d in $(find ~/Code -name ".git" -type d -maxdepth 2); do
+        cd $(dirname $d)
+        echo -n "Processing $(basename $(dirname $d)) ..."
+        git fetch origin >/dev/null 2>&1
+        onBranch=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        if [[ $(git branch 2>/dev/null | grep master | wc -l) -eq 1 ]]; then
+            headBranch=master
+        elif [[ $(git branch 2>/dev/null | grep main | wc -l) -eq 1 ]]; then
+            headBranch=main
+        else
+            headBranch=$(git remote show origin | grep "HEAD branch" | cut -d ":" -f 2 | xargs)
+        fi
+
+        if [[ $onBranch == $headBranch ]]; then
+            if [[ $(git log $headBranch..origin/$onBranch --oneline | wc -l) -gt 0 ]]; then
+                echo " updating now ..."
+                git pull >/dev/null 2>&1
+            else
+                echo " already updated."
+            fi
+        else
+            echo " skipped, branch '$onBranch != $headBranch'."
+        fi
+    done
+)}
+
 function git-sync() {(
     set -eo pipefail
 
