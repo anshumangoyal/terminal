@@ -176,6 +176,7 @@ export GCS_VOLUME=$HOME/GcsData
 export KUBE_CONFIGS_PATH=$HOME/GcsData
 export CREDS_PATH=$HOME/GcsData/creds.yaml
 export PROMPT_EOL_MARK=''
+export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 
 # activate venv
 if [[ -f ~/Code/venv/bin/activate ]]; then
