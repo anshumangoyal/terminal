@@ -61,12 +61,6 @@ function python-venv() {(
     $PYTHON_VER -m pip install --quiet --upgrade pip
     $PYTHON_VER -m pip install --quiet --upgrade setuptools virtualenv wheel twine
     $PYTHON_VER -m pip install --requirement $1
-
-    # Virtual Env (only when automation-lib is present there)
-    if [[ -d ~/Code/automation-lib ]]; then
-        ln -fs ~/Code/automation-lib/decurtis ~/Code/venv/lib/$PYTHON_VER/site-packages/
-        ls -l ~/Code/venv/lib/$PYTHON_VER/site-packages/ | grep decurtis
-    fi
 )}
 
 # Function to update OS Files (Brew in Mac and apt-get in Ubuntu)
@@ -528,8 +522,8 @@ function git-clone() {(
         rm -rf $1
     fi
     remote="github-dc"
-    echo -e "CloneCmd → 'git clone git@$remote:decurtis/$1.git' ..."
-    git clone git@$remote:decurtis/$1.git
+    echo -e "CloneCmd → 'git clone git@github-ag:anshumangoyal/$1.git' ..."
+    git clone git@github-ag:anshumangoyal/$1.git
 )}
 
 function git-zombies() {(
