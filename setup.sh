@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euofab pipefail
+set -eo pipefail
 IFS=$'\n\t'
 
 if [[ $# -ne 1 ]] && [[ ! -f $1 ]]; then
@@ -55,7 +55,7 @@ unset t
 
 # Install Brew Formulas
 function brew-formula() {(
-    set -beufa -o pipefail
+    set -eo pipefail
     local package=$1
     local toInstall=true
     for installed in $(brew list --formula -1); do
