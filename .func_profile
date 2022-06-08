@@ -541,7 +541,7 @@ function git-zombies() {(
             fi
         done <<< "$REMOTE_BRANCHES"
         if [[ $TO_DELETE == true ]]; then
-            if [[ $LOCAL_BRANCH = "DCP-53075-Ci-Enhancements" ]]; then
+            if [[ $LOCAL_BRANCH = "Code-Changes" ]]; then
                 CI_BRANCH_DELETED=true
             fi
             echo -e "Deleting Branch $LOCAL_BRANCH ..."
@@ -550,9 +550,9 @@ function git-zombies() {(
         fi
     done <<< "$LOCAL_BRANCHES"
     if [[ $CI_BRANCH_DELETED == true ]]; then
-        echo -e "DCP-53075-Ci-Enhancements Was Deleted Re-Creating ..."
-        git checkout -b DCP-53075-Ci-Enhancements origin/master
-        git push -f origin DCP-53075-Ci-Enhancements
+        echo -e "Code-Changes Was Deleted Re-Creating ..."
+        git checkout -b Code-Changes origin/master
+        git push -f origin Code-Changes
     fi
 )}
 

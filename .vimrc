@@ -101,7 +101,7 @@ set smartcase
 " colorscheme elflord
 " colorscheme industry
 " colorscheme morning
-colorscheme pablo
-" colorscheme koehler
+" colorscheme pablo
+colorscheme koehler
 
 set paste

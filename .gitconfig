@@ -9,8 +9,8 @@
 	bdl = "branch --delete --force"
 	bdr = "push origin --delete --force"
 	br = "branch -av"
-	cm = "commit -m 'DCP-53075: Code Changes'"
-	acp = "!git add -A && git commit -m 'DCP-53075: Code Fix' && git push --set-upstream origin \"$(git rev-parse --abbrev-ref HEAD)\""
+	cm = "commit -m 'Code Changes'"
+	acp = "!git add -A && git commit -m 'Code Fix' && git push --set-upstream origin \"$(git rev-parse --abbrev-ref HEAD)\""
 	pu = "!git push --set-upstream origin/\"$(git rev-parse --abbrev-ref HEAD)\""
  	update = "!git fetch && git merge origin/\"$(git remote show origin | grep \"HEAD branch\" | cut -d \":\" -f 2 | xargs)\" && git push --set-upstream origin \"$(git rev-parse --abbrev-ref HEAD)\""
 [apply]
