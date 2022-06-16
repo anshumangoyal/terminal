@@ -820,11 +820,9 @@ function install-kubectl-images() {(
 function install-kubectl-tail() {(
     set -eo pipefail
 
-    if [[ $(uname -s) == 'Linux' && $(uname -m) == 'x86_64' ]]; then
+    if [[ $(uname -s) == 'Linux' ]]; then
         image="linux_amd64"
-    elif [[ $(uname -s) == 'Linux' && $(uname -m) == 'aarch64' ]]; then
-        image="linux_arm64"
-    elif [[ $(uname -s) == 'Darwin' && $(uname -m) == 'arm64' ]]; then
+    elif [[ $(uname -s) == 'Darwin' ]]; then
         image="darwin_amd64"
     else
         echo "ERROR: Platform $(uname -s) and $(uname -m) are not supported !!"
