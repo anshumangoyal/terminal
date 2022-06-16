@@ -778,18 +778,19 @@ function install-kubectx() {(
 
     version=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | jq --raw-output .tag_name)
     if [[ $(uname -s) == 'Linux' && $(uname -m) == 'x86_64' ]]; then
-        echo "installing kubectx & kubens $version on Linux x86_64 ..."
-        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_linux_x86_64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_linux_x86_64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        image="linux_x86_64"
     elif [[ $(uname -s) == 'Linux' && $(uname -m) == 'aarch64' ]]; then
-        echo "installing kubectx & kubens $version on Linux arm64 ..."
-        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-    elif [[ $(uname -s) == 'Darwin' ]]; then
-        echo "installing kubectx & kubens $version on Darwin arm64 ..."
-        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_darwin_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_darwin_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        image="linux_arm64"
+    elif [[ $(uname -s) == 'Darwin' && $(uname -m) == 'arm64' ]]; then
+        image="darwin_arm64"
+    else
+        echo "ERROR: Platform $(uname -s) and $(uname -m) are not supported !!"
+        exit 1
     fi
+
+    echo "installing kubectx & kubens $version for $image ..."
+    curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_${image}.tar.gz" | tar -C ~/.krew/bin/ -xz;
+    curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_${image}.tar.gz" | tar -C ~/.krew/bin/ -xz;
     mv ~/.krew/bin/kubens ~/.krew/bin/kubectl-ns
 )}
 
@@ -798,18 +799,19 @@ function install-kubectl-images() {(
     set -eo pipefail
 
     version=$(curl -s https://api.github.com/repos/chenjiandongx/kubectl-images/releases/latest | jq --raw-output .tag_name)
-    if [[ $(uname -s) == 'Linux' ]]; then
-        if [[ $(uname -m) == 'x86_64' ]]; then
-            echo "installing kubectl-images $version on amd64 ..."
-            curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_linux_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-        else
-            echo "installing kubectl-images $version on arm64 ..."
-            curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-        fi
-    elif [[ $(uname -s) == 'Darwin' ]]; then
-        platform=$(uname -a | grep -o '[^ ]*$')
-        curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_$(uname -s)_$platform.tar.gz" | tar -C ~/.krew/bin/ -xz;
+    if [[ $(uname -s) == 'Linux' && $(uname -m) == 'x86_64' ]]; then
+        image="linux_amd64"
+    elif [[ $(uname -s) == 'Linux' && $(uname -m) == 'aarch64' ]]; then
+        image="linux_arm64"
+    elif [[ $(uname -s) == 'Darwin' && $(uname -m) == 'arm64' ]]; then
+        image="darwin_arm64"
+    else
+        echo "ERROR: Platform $(uname -s) and $(uname -m) are not supported !!"
+        exit 1
     fi
+
+    echo "installing kubectl-images $version for $image ..."
+    curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/${version}/kubectl-images_${image}.tar.gz" | tar -C ~/.krew/bin/ -xz;
     chmod +x ~/.krew/bin/kubectl-images
     kubectl-images --version
 )}
@@ -818,17 +820,19 @@ function install-kubectl-images() {(
 function install-kubectl-tail() {(
     set -eo pipefail
 
-    if [[ $(uname -s) == 'Linux' ]]; then
-        if [[ $(uname -m) == 'x86_64' ]]; then
-            echo "installing kubectl-tail on amd64 ..."
-            curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_linux_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-        else
-            echo "installing kubectl-tail on arm64 ..."
-            curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
-        fi
-    elif [[ $(uname -s) == 'Darwin' ]]; then
-        curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_darwin_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+    if [[ $(uname -s) == 'Linux' && $(uname -m) == 'x86_64' ]]; then
+        image="linux_amd64"
+    elif [[ $(uname -s) == 'Linux' && $(uname -m) == 'aarch64' ]]; then
+        image="linux_arm64"
+    elif [[ $(uname -s) == 'Darwin' && $(uname -m) == 'arm64' ]]; then
+        image="darwin_amd64"
+    else
+        echo "ERROR: Platform $(uname -s) and $(uname -m) are not supported !!"
+        exit 1
     fi
+
+    echo "installing kubectl-tail v0.15 for $image ..."
+    curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_${image}.tar.gz" | tar -C ~/.krew/bin/ -xz;
     mv ~/.krew/bin/kail ~/.krew/bin/kubectl-tail
     chmod +x ~/.krew/bin/kubectl-tail
     rm -rf ~/.krew/bin/*.txt ~/.krew/bin/*.md
@@ -839,18 +843,19 @@ function install-fzf() {(
     set -eo pipefail
 
     version=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest | jq --raw-output .tag_name)
-    if [[ $(uname -s) == 'Linux' ]]; then
-        if [[ $(uname -m) == 'x86_64' ]]; then
-            echo "installing fzf $version on linux-amd64"
-            curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz" | tar -C ~/.fzf/ -xz;
-        else
-            echo "installing fzf $version on linux-arm64"
-            curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_arm64.tar.gz" | tar -C ~/.fzf/ -xz;
-        fi
-    elif [[ $(uname -s) == 'Darwin' ]]; then
+    if [[ $(uname -s) == 'Linux' && $(uname -m) == 'x86_64' ]]; then
+        echo "installing fzf $version on linux-amd64"
+        curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz" | tar -C ~/.fzf/ -xz;
+    elif [[ $(uname -s) == 'Linux' && $(uname -m) == 'aarch64' ]]; then
+        echo "installing fzf $version on linux-arm64"
+        curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_arm64.tar.gz" | tar -C ~/.fzf/ -xz;
+    elif [[ $(uname -s) == 'Darwin' && $(uname -m) == 'arm64' ]]; then
         echo "installing fzf $version on darwin-arm64"
         curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-$(uname -s)_$(uname -m).zip" -o /tmp/fzf.zip
         unzip -o /tmp/fzf.zip -d ~/.fzf/
+    else
+        echo "ERROR: Platform $(uname -s) and $(uname -m) are not supported !!"
+        exit 1
     fi
 )}
 
@@ -859,12 +864,18 @@ function install-kubectl() {(
     set -eo pipefail
 
     version=$(curl -fSsL https://dl.k8s.io/release/stable.txt)
-    if [[ $(uname -m) == 'x86_64' ]]; then
+    if [[ $(uname -s) == 'Linux' && $(uname -m) == 'x86_64' ]]; then
         echo "installing kubectl $version on Linux amd64 Platform ..."
         curl -fSsL "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl" -o /usr/bin/kubectl
-    else
+    elif [[ $(uname -s) == 'Linux' && $(uname -m) == 'aarch64' ]]; then
         echo "installing kubectl $version on Linux arm64 Platform ..."
         curl -fSsL "https://dl.k8s.io/release/$version/bin/linux/arm64/kubectl" -o /usr/bin/kubectl
+    elif [[ $(uname -s) == 'Darwin' && $(uname -m) == 'arm64' ]]; then
+        echo "installing kubectl $version on Linux arm64 Platform ..."
+        curl -fSsL "https://dl.k8s.io/release/$version/bin/darwin/arm64/kubectl" -o /usr/bin/kubectl
+    else
+        echo "ERROR: Platform $(uname -s) and $(uname -m) are not supported !!"
+        exit 1
     fi
     chmod +x /usr/bin/kubectl
 )}
