@@ -46,9 +46,9 @@ function python-venv() {(
 
     rm -rf venv
     if $(timeout 1 bash -c 'cat < /dev/null > /dev/tcp/172.16.1.2/443'); then
-        PYTHON_VER=python3.8
-    else
         PYTHON_VER=python3.9
+    else
+        PYTHON_VER=python3.8
     fi
     echo "Using $PYTHON_VER for installation ..."
 
