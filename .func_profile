@@ -783,15 +783,19 @@ function install-kubectx() {(
     curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_$(uname -s)_$(uname -m).tar.gz" | tar -C ~/.krew/bin/ -xz;
 )}
 
-
 # ******** kubectl-images ********
 function install-kubectl-images() {(
     set -eo pipefail
 
-    echo "installing kubectl-images ..."
     version=$(curl -s https://api.github.com/repos/chenjiandongx/kubectl-images/releases/latest | jq --raw-output .tag_name)
     if [[ $(uname -s) == 'Linux' ]]; then
-        curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_linux_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        if [[ $(uname -m) == 'x86_64' ]]; then
+            echo "installing kubectl-images $version on amd64 ..."
+            curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_linux_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        else
+            echo "installing kubectl-images $version on arm64 ..."
+            curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        fi
     elif [[ $(uname -s) == 'Darwin' ]]; then
         platform=$(uname -a | grep -o '[^ ]*$')
         curl -fSsL "https://github.com/chenjiandongx/kubectl-images/releases/download/$version/kubectl-images_$(uname -s)_$platform.tar.gz" | tar -C ~/.krew/bin/ -xz;
@@ -804,9 +808,14 @@ function install-kubectl-images() {(
 function install-kubectl-tail() {(
     set -eo pipefail
 
-    echo "installing kubectl-tail ..."
     if [[ $(uname -s) == 'Linux' ]]; then
-        curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_linux_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        if [[ $(uname -m) == 'x86_64' ]]; then
+            echo "installing kubectl-tail on amd64 ..."
+            curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_linux_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        else
+            echo "installing kubectl-tail on arm64 ..."
+            curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        fi
     elif [[ $(uname -s) == 'Darwin' ]]; then
         curl -fSsL "https://github.com/boz/kail/releases/download/v0.15.0/kail_0.15.0_darwin_amd64.tar.gz" | tar -C ~/.krew/bin/ -xz;
     fi
@@ -839,11 +848,13 @@ function install-fzf() {(
 function install-kubectl() {(
     set -eo pipefail
 
-    echo "installing kubectl ..."
     version=$(curl -fSsL https://dl.k8s.io/release/stable.txt)
-    curl -fSsL "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl" -o /usr/bin/kubectl
+    if [[ $(uname -m) == 'x86_64' ]]; then
+        echo "installing kubectl $version on Linux amd64 Platform ..."
+        curl -fSsL "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl" -o /usr/bin/kubectl
+    else
+        echo "installing kubectl $version on Linux arm64 Platform ..."
+        curl -fSsL "https://dl.k8s.io/release/$version/bin/linux/arm64/kubectl" -o /usr/bin/kubectl
+    fi
     chmod +x /usr/bin/kubectl
-
-    # ***** Deleting Temp Files *****
-    rm -rf ~/.krew/bin/LICENSE* ~/.krew/bin/README*
 )}
