@@ -776,11 +776,21 @@ function passwd_gen() {(
 function install-kubectx() {(
     set -eo pipefail
 
-    echo "installing kubectx & kubens ..."
     version=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | jq --raw-output .tag_name)
-    curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_$(uname -s)_$(uname -m).tar.gz" | tar -C ~/.krew/bin/ -xz;
+    if [[ $(uname -s) == 'Linux' && $(uname -m) == 'x86_64' ]]; then
+        echo "installing kubectx & kubens $version on Linux x86_64 ..."
+        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_linux_x86_64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_linux_x86_64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+    elif [[ $(uname -s) == 'Linux' && $(uname -m) == 'aarch64' ]]; then
+        echo "installing kubectx & kubens $version on Linux arm64 ..."
+        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_linux_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+    elif [[ $(uname -s) == 'Darwin' ]]; then
+        echo "installing kubectx & kubens $version on Darwin arm64 ..."
+        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubens_${version}_darwin_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+        curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_darwin_arm64.tar.gz" | tar -C ~/.krew/bin/ -xz;
+    fi
     mv ~/.krew/bin/kubens ~/.krew/bin/kubectl-ns
-    curl -fSsL "https://github.com/ahmetb/kubectx/releases/download/$version/kubectx_${version}_$(uname -s)_$(uname -m).tar.gz" | tar -C ~/.krew/bin/ -xz;
 )}
 
 # ******** kubectl-images ********
