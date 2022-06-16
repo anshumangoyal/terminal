@@ -819,11 +819,17 @@ function install-kubectl-tail() {(
 function install-fzf() {(
     set -eo pipefail
 
-    echo "installing fzf ..."
     version=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest | jq --raw-output .tag_name)
     if [[ $(uname -s) == 'Linux' ]]; then
-        curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz" | tar -C ~/.fzf/ -xz;
+        if [[ $(uname -m) == 'x86_64' ]]; then
+            echo "installing fzf $version on linux-amd64"
+            curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz" | tar -C ~/.fzf/ -xz;
+        else
+            echo "installing fzf $version on linux-arm64"
+            curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_arm64.tar.gz" | tar -C ~/.fzf/ -xz;
+        fi
     elif [[ $(uname -s) == 'Darwin' ]]; then
+        echo "installing fzf $version on darwin-arm64"
         curl -fSsL "https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-$(uname -s)_$(uname -m).zip" -o /tmp/fzf.zip
         unzip -o /tmp/fzf.zip -d ~/.fzf/
     fi
