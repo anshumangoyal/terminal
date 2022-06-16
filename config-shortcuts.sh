@@ -50,7 +50,7 @@ for s in "${binaryDirs[@]}"; do
         continue
     fi
     # echo "ln -fs $CWD/$s $HOME/"
-    ln -fs $CWD/$s $HOME/
+    cp -pr $CWD/$s $HOME/
 done
 
 plugins=(
