@@ -177,7 +177,16 @@ export KUBE_CONFIGS_PATH=$HOME/GcsData
 export CREDS_PATH=$HOME/GcsData/creds.yaml
 export PROMPT_EOL_MARK=''
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-export ANSIBLE_CONFIG=~/ansible.cfg
+export PY_COLORS=1
+
+# Ansible Related Environment Configs
+if [[ -f ~/ansible.cfg ]]; then
+	export ANSIBLE_CONFIG=~/ansible.cfg
+else
+	export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
+	export ANSIBLE_FORCE_COLOR=true
+	export ANSIBLE_HOST_KEY_CHECKING=false
+fi
 
 # activate venv
 if [[ -f ~/Code/venv/bin/activate ]]; then
