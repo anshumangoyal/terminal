@@ -177,6 +177,7 @@ export KUBE_CONFIGS_PATH=$HOME/GcsData
 export CREDS_PATH=$HOME/GcsData/creds.yaml
 export PROMPT_EOL_MARK=''
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+export ANSIBLE_CONFIG=~/ansible.cfg
 
 # activate venv
 if [[ -f ~/Code/venv/bin/activate ]]; then

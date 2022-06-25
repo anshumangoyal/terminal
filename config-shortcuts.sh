@@ -22,7 +22,7 @@ if [[ $(python3 -c "import distro;print(str(distro.name()).lower())") == "darwin
     done
 fi
 
-binaryFiles=(.func_profile .gitconfig .gitignore_global .vimrc .zshrc)
+binaryFiles=(.func_profile .gitconfig .gitignore_global .vimrc .zshrc ansible.cfg)
 for s in "${binaryFiles[@]}"; do
     # delete existing
     if [[ -f "$HOME/$s" || -L "$HOME/$s" || -e "$HOME/$s" ]]; then
