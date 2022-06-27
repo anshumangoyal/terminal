@@ -1,1 +1,15 @@
-hs.hotkey.bind({"ctrl", "alt", "cmd"}, "p", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
+hs.hotkey.bind({"ctrl", "alt", "cmd"}, "p", function()
+    hs.eventtap.keyStrokes(hs.pasteboard.getContents())
+end)
+
+hs.hotkey.bind({"ctrl", "alt", "cmd"}, "w", function() 
+    hs.eventtap.keyStrokes("https://wame/91")
+    hs.eventtap.keyStrokes(hs.pasteboard.getContents())
+end)
+
+hs.hotkey.bind({"alt", "cmd", "c"}, "p", function() 
+    hs.eventtap.keyStrokes('anshuman.goyal@cohesity.com')
+    hs.eventtap.keyStroke({},"tab")
+    hs.eventtap.keyStrokes("Hariom@32145")
+    hs.eventtap.keyStroke({},"return")
+end)
