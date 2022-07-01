@@ -184,6 +184,7 @@ function connectivity-check() {(
     done
 )}
 
+# Update Brew Packages
 function brew-packages() {(
     set -eo pipefail
 
@@ -225,6 +226,7 @@ function brew-packages() {(
     done
 )}
 
+## Update Pip Requirements File with latest available packages
 function update-pip-requirements() {(
     set -eo pipefail
 
@@ -266,6 +268,7 @@ function update-pip-requirements() {(
     deactivate
 )}
 
+## Docker Run a container, with a lot of checks
 function dock-run() {(
     set -eo pipefail
 
@@ -323,6 +326,7 @@ function dock-run() {(
     fi
 )}
 
+## DOcker Stop
 function dock-stop() {(
     set -eo pipefail
 
@@ -334,6 +338,7 @@ function dock-stop() {(
     docker rm --force $1
 )}
 
+## Docker Push and image
 function dock-push() {(
     set -eo pipefail
 
@@ -387,6 +392,7 @@ function dock-remove() {(
     fi
 )}
 
+## DOcker Build Command
 function docker-build() {(
     set -eo pipefail
 
@@ -407,6 +413,7 @@ function docker-build() {(
     fi
 )}
 
+## DOcker Compose
 function dock-compose() {(
     set -eo pipefail
 
@@ -457,6 +464,7 @@ function dock-compose() {(
     fi
 )}
 
+## Docker Pull Images
 function docker-pull-images() {(
     set -eo pipefail
 
@@ -466,12 +474,14 @@ function docker-pull-images() {(
     done
 )}
 
+## Docker Fix Permissions
 function docker-fix-permission() {(
     set -eo pipefail
 
     sudo chmod 777 /var/run/docker.sock
 )}
 
+## Update Docker Compose
 function update-docker-compose() {(
     set -eo pipefail
 
@@ -498,7 +508,7 @@ function update-docker-compose() {(
     docker compose version
 )}
 
-# Clean non-tracked Files
+# Git Clean all Non-Tracked Files
 function git-clean() {(
     set -eo pipefail
 
@@ -510,6 +520,7 @@ function git-clean() {(
     fi
 )}
 
+# Git Clone, One Single Command
 function git-clone() {(
     set -eo pipefail
 
@@ -526,6 +537,7 @@ function git-clone() {(
     git clone git@github-ag:anshumangoyal/$1.git
 )}
 
+# Delete Stale Git Branches
 function git-zombies() {(
     set -eo pipefail
 
@@ -556,6 +568,7 @@ function git-zombies() {(
     fi
 )}
 
+# Find .git folders and update the repositories
 function git-update-repos() {(
     set -eo pipefail
 
@@ -585,6 +598,7 @@ function git-update-repos() {(
     done
 )}
 
+# Git Sync, Pull from HEAD
 function git-sync() {(
     set -eo pipefail
 
@@ -621,7 +635,7 @@ function git-sync() {(
     fi
 )}
 
-# Perform a git push of the current branch we are in
+# Git Push on Branch
 function git-push() {(
     set -eo pipefail
 
@@ -630,6 +644,7 @@ function git-push() {(
     git push -u origin "$branch"
 )}
 
+# Git push --force
 function git-push-force() {(
     set -eo pipefail
 
@@ -638,6 +653,7 @@ function git-push-force() {(
     git push -f origin "$branch"
 )}
 
+## Git Mirror a remote repository
 function git-mirror() {(
     set -eo pipefail
 
@@ -661,6 +677,7 @@ function git-mirror() {(
     rm -rf $directory
 )}
 
+## Git Create Tag and Push
 function git-tag-create() {(
     set -eo pipefail
 
@@ -670,6 +687,7 @@ function git-tag-create() {(
     git push --follow-tags --set-upstream origin $branch
 )}
 
+## Kubernetes Describe Pod
 function kdp() {(
     set -eo pipefail
 
@@ -681,6 +699,7 @@ function kdp() {(
     kubectl describe pod $1
 )}
 
+## Kubernetes Execute
 function kec() {(
     set -eo pipefail
 
@@ -702,6 +721,53 @@ function kec() {(
         fi
 		break
 	done
+)}
+
+## Kubernetes delete all evicted pods ##
+function delete-evicted-pods() {(
+    set -eo pipefail
+
+    IFS=$'\n'
+    if [[ $# -ne 1 ]]; then
+        echo -e "1st ARG as namespace name is needed !!"
+        return 0
+    fi
+    for pod in $(kubectl get pods --namespace $1 | grep Evicted); do
+        name=$(echo $pod | awk '{print $1}')
+        ready=$(echo $pod | awk '{print $2}')
+        status=$(echo $pod | awk '{print $3}')
+        if [[ $status == 'Evicted' ]]; then
+            echo "Delete $status → $name"
+            kubectl delete pod $name --namespace $1
+        fi
+    done
+)}
+
+## Kubernetes delete all evicted pods ##
+function dump-pod-logs() {(
+    set -eo pipefail
+
+    IFS=$'\n'
+    if [[ $# -ne 1 ]]; then
+        echo -e "1st ARG as namespace name is needed !!"
+        return 0
+    fi
+    for pod in $(kubectl get pods --namespace $1); do
+        name=$(echo $pod | awk '{print $1}')
+        ready=$(echo $pod | awk '{print $2}')
+        status=$(echo $pod | awk '{print $3}')
+        if [[ $(echo $ready | cut -d "/" -f1) != $(echo $ready | cut -d "/" -f2) ]]; then
+            if [[ $status == "ContainerCreating" || $status == "Pending" ]]; then
+                echo "Describe $status Pod → $name.log"
+                kubectl describe pod --namespace $1 $name >$name.log
+            elif [[ $status == "Completed" ]]; then
+                continue
+            else
+                echo "Dumping $status Logs → $name.log"
+                kubectl logs --all-containers --namespace $1 $name >$name.log
+            fi
+        fi
+    done
 )}
 
 # ******** Update Tokens ********
