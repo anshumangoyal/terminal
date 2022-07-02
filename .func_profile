@@ -219,7 +219,7 @@ function brew-packages() {(
 )}
 
 ## Update Pip Requirements File with latest available packages
-function update-pip-requirements() {(
+function pip-update-requirements() {(
     set -eo pipefail
 
     if [[ $# -ne 1 ]]; then
