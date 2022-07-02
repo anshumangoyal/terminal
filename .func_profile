@@ -41,26 +41,18 @@ function python-venv() {(
         echo -e "deactivate virtual environment"
         deactivate
     fi
-
     local PYTHONHTTPSVERIFY=0
-
     rm -rf venv
-    if $(timeout 1 bash -c 'cat < /dev/null > /dev/tcp/172.16.1.2/443'); then
-        PYTHON_VER=python3.9
-    else
-        PYTHON_VER=python3.8
-    fi
-    echo "Using $PYTHON_VER for installation ..."
 
-    $PYTHON_VER -m pip install --quiet --upgrade pip
-    $PYTHON_VER -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+    python3.10 -m pip install --quiet --upgrade pip
+    python3.10 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
 
-    $PYTHON_VER -m venv venv
+    python3.10 -m venv venv
     source venv/bin/activate
 
-    $PYTHON_VER -m pip install --quiet --upgrade pip
-    $PYTHON_VER -m pip install --quiet --upgrade setuptools virtualenv wheel twine
-    $PYTHON_VER -m pip install --requirement $1
+    python3.10 -m pip install --quiet --upgrade pip
+    python3.10 -m pip install --quiet --upgrade setuptools virtualenv wheel twine
+    python3.10 -m pip install --requirement $1
 )}
 
 # Function to update OS Files (Brew in Mac and apt-get in Ubuntu)
@@ -241,27 +233,20 @@ function update-pip-requirements() {(
         rm -rf /tmp/e2e-venv
     fi
 
-    if $(timeout 1 bash -c 'cat < /dev/null > /dev/tcp/172.16.1.2/443'); then
-        PYTHON_VER=python3.8
-    else
-        PYTHON_VER=python3.9
-    fi
-    echo "Using $PYTHON_VER for installation ..."
-
     # Create Temp Virtual Environment
-    $PYTHON_VER -m venv /tmp/e2e-venv
+    python3.10 -m venv /tmp/e2e-venv
     . /tmp/e2e-venv/bin/activate
 
     PYTHONHTTPSVERIFY=0
-    $PYTHON_VER -m pip install --quiet --upgrade pip setuptools virtualenv wheel twine
-    $PYTHON_VER -m pip install --upgrade pyopenssl
+    python3.10 -m pip install --quiet --upgrade pip setuptools virtualenv wheel twine
+    python3.10 -m pip install --upgrade pyopenssl
 
     # Patch Requirements File
     sed -i -E "s|(.*?)==(.*)|\1|g" $1
 
     # install requirements and freeze
-    $PYTHON_VER -m pip install --requirement $1
-    $PYTHON_VER -m pip freeze >$1
+    python3.10 -m pip install --requirement $1
+    python3.10 -m pip freeze >$1
 
     sed -i -e "/^pkg-resources*/d" $1
     sed -i -e "/^pyobjc*/d" $1

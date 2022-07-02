@@ -129,7 +129,7 @@ addPaths=(
     $PREFIX/opt/curl/bin
     $PREFIX/opt/grep/libexec/gnubin
     $PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
-    $PREFIX/opt/python@3.8/bin
+    $PREFIX/opt/python@3.10/bin
     $PREFIX/opt/openssl@3/bin
     $PREFIX/opt/sqlite/bin
     $PREFIX/opt/postgresql@9.6/bin
