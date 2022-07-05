@@ -271,8 +271,8 @@ function dock-run() {(
     done
 
     # Pull Latest image and Run Docker
-    echo -e "docker run -tdi --rm --privileged --name $1 $2 ..."
-    docker run -tdi --rm --privileged --name $1 $2
+    echo -e "docker run -tdi --rm --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2 ..."
+    docker run -tdi --rm --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2
 
     # Check if container is running
     CONT_RUNNING=false
@@ -296,10 +296,25 @@ function dock-run() {(
         docker exec -it $1 /bin/bash -c 'apt-get install -y vim curl git openssh-server'
     fi
 
+    # Setup SSH Keys
+    docker exec -it $1 /bin/bash -c 'ssh-keygen -q -t ed25519 -b 521 -f $HOME/.ssh/id_rsa -N ""'
+
     if [[ $CONT_RUNNING == true ]]; then
         if [[ -d $HOME/.ssh || -L $HOME/.ssh ]] && [[ $# -gt 2 ]] && [[ $3 == 'yes' ]]; then
-              docker cp --archive --follow-link $HOME/.ssh $1:/root/
+            # Copy SSH Files (authorized_keys)
+            echo "Copying SSH Files ..."
+            docker cp --archive --follow-link ~/.ssh/authorized_keys $1:/root/.ssh/authorized_keys
+            docker exec -it $1 /bin/bash -c 'chmod 644 /root/.ssh/authorized_keys'
+
+            # Copy SSH Files (id_rsa)
+            docker cp --archive --follow-link ~/.ssh/id_ed25519-ag $1:/root/.ssh/id_rsa
+            docker exec -it $1 /bin/bash -c 'chmod 600 /root/.ssh/id_rsa'
+
+            # Copy SSH Files (id_rsa.pub)
+            docker cp --archive --follow-link ~/.ssh/id_ed25519-ag.pub $1:/root/.ssh/id_rsa.pub
+            docker exec -it $1 /bin/bash -c 'chmod 644 /root/.ssh/id_rsa.pub'
         fi
+
         if [[ $(docker exec -it $1 find -L /bin -name bash -type f | wc -l) -eq 1 ]]; then
             docker exec -ti $1 bash
         else
