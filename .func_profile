@@ -271,14 +271,17 @@ function dock-run() {(
     done
 
     # Pull Latest image and Run Docker
-    echo -e "docker run -tdi --rm --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2 ..."
-    docker run -tdi --rm --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2
+    # echo -e "docker run -tdi --rm --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2 ..."
+    # docker run -tdi --rm --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2
+
+    echo -e "docker run -tdi --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2 ..."
+    docker run -tdi --privileged --volume ~/Code/mnt:/mnt --publish 2201:22 --name $1 $2
 
     # Check if container is running
-    CONT_RUNNING=false
+    IS_RUNNING=false
     for container in $(docker ps -a --format '{{ .Names }}'); do
         if [[ $container == $1 ]]; then
-            CONT_RUNNING=true
+            IS_RUNNING=true
         fi
     done
 
@@ -299,7 +302,7 @@ function dock-run() {(
     # Setup SSH Keys
     docker exec -it $1 /bin/bash -c 'ssh-keygen -q -t ed25519 -b 521 -f $HOME/.ssh/id_rsa -N ""'
 
-    if [[ $CONT_RUNNING == true ]]; then
+    if [[ $IS_RUNNING == true ]]; then
         if [[ -d $HOME/.ssh || -L $HOME/.ssh ]] && [[ $# -gt 2 ]] && [[ $3 == 'yes' ]]; then
             # Copy SSH Files (authorized_keys)
             echo "Copying SSH Files ..."
@@ -314,6 +317,16 @@ function dock-run() {(
             docker cp --archive --follow-link ~/.ssh/id_ed25519-ag.pub $1:/root/.ssh/id_rsa.pub
             docker exec -it $1 /bin/bash -c 'chmod 644 /root/.ssh/id_rsa.pub'
         fi
+
+        # Configure SSH Service
+        docker exec -it $1 /bin/bash -c 'sed -i "s|^#PermitRootLogin.*|PermitRootLogin yes|g" /etc/ssh/sshd_config'
+        docker exec -it $1 /bin/bash -c 'sed -i "s|^PermitRootLogin.*|PermitRootLogin yes|g" /etc/ssh/sshd_config'
+        docker exec -it $1 /bin/bash -c 'sed -i "s|^#PasswordAuthentication.*|PasswordAuthentication yes|g" /etc/ssh/sshd_config'
+        docker exec -it $1 /bin/bash -c 'sed -i "s|^#StrictModes.*|StrictModes no|g" /etc/ssh/sshd_config'
+        docker exec -it $1 /bin/bash -c 'usermod --password $(echo "docker@32145" | openssl passwd -1 -stdin) root'
+
+        # Start SSH Service
+        docker exec -it $1 /bin/bash -c 'service ssh start'
 
         if [[ $(docker exec -it $1 find -L /bin -name bash -type f | wc -l) -eq 1 ]]; then
             docker exec -ti $1 bash
