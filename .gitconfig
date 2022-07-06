@@ -1,5 +1,5 @@
 [user]
-	email = anshumangoyal@gmail.com
+	email = anshuman.goyal@cohesity.com
 	name = Anshuman Goyal
 [alias]
     st = "status -sb"
@@ -67,3 +67,9 @@
 [safe]
 	directory = /Users/anshuman.goyal/Code/restricted
 	directory = /Users/anshuman.goyal/Code/restricted
+[push]
+	default = tracking
+[diff]
+	tool = tkdiff
+[difftool]
+	prompt = no
