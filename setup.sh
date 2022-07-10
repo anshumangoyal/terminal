@@ -80,7 +80,7 @@ formulaToInstall=(
     krew kubectx kubernetes-cli ldns libassuan libcbor libev libevent libffi libfido2 libgcrypt libgpg-error
     libidn2 libksba libmetalink libmpc libssh2 libtasn1 libtool libunistring libusb libuv libyaml lua lz4 lzo m4
     mpdecimal mpfr ncurses nettle nghttp2 nmap node npth oniguruma openjdk openldap openssh openssl@3 openvpn
-    p11-kit pcre pcre2 perl pinentry pip-completion pkcs11-helper pkg-config postgresql python@3.8 python@3.9
+    p11-kit pcre pcre2 perl pinentry pip-completion pkcs11-helper pkg-config postgresql python@3.8 python@3.10
     readline rename rtmpdump ruby shyaml speedtest-cli sqlite tcl-tk telnet tree unbound vim watch wget xz yarn
     yarn-completion yq zlib zsh-completions zstd colima zsh-syntax-highlighting zplug
 )
