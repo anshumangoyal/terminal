@@ -170,8 +170,6 @@ fi
 export JENKINS_HOME="/var/lib/jenkins"
 export E2E_PASSWORD='7735R!U-qN#r'
 export LOG_LEVEL='INFO'
-export CI_USER_TOKEN='ci.user:69cdf75b-91f6-4aeb-ba3c-c4b8751ce282'
-export TESTING_USER_TOKEN='testing.user:0d081fc8-ccdb-4018-8aee-4454055307b5-4acc-bc39-c28551a87495'
 export GCS_VOLUME=$HOME/GcsData
 export KUBE_CONFIGS_PATH=$HOME/GcsData
 export CREDS_PATH=$HOME/GcsData/creds.yaml
