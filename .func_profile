@@ -956,3 +956,29 @@ function install-kubectl() {(
     fi
     chmod +x /usr/bin/kubectl
 )}
+
+function get_system_memory() {
+    set -eo pipefail
+
+    user="cohesity"
+    password="fr8shst8rt"
+
+    if [[ $# -eq 1 ]]; then
+        host=$1
+    elif [[ $# -eq 2 ]]; then
+        host=$1
+        user=$2
+    elif [[ $# -eq 3 ]]; then
+        host=$1
+        user=$2
+        password=$3
+    else
+        echo "Usage: get_system_memory <host> <user> <password>"
+        return
+    fi
+
+    memoryKB=$(sshpass -p $password ssh $user@$host "grep MemTotal /proc/meminfo" | awk '{ print $2 }' | xargs)
+    memoryGB=$(echo $memoryKB | awk '{ $1/=1048576;printf "%.2fGB\n",$1 }')
+    echo "$host = $memoryGB"
+    return $memoryGB
+}
