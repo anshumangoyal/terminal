@@ -736,6 +736,29 @@ function kec() {(
 	done
 )}
 
+function kubernetes-dump-all() {(
+    set -eo pipefail
+
+    IFS=$'\n'
+    if [[ $# -ne 1 ]]; then
+        echo -e "1st ARG as namespace is needed !!"
+        return 0
+    fi
+    if [[ -d $1 ]]; then
+        rm -rf $1
+    fi
+    mkdir -p $1
+
+    # save all config maps
+    for map in $(kubectl get configmaps --no-headers --namespace $1 | awk '{print $1}'); do
+        kubectl get configmaps $map --namespace $1 -o yaml >$1/config-map-$map 2>&1
+    done
+    for ingress in $(kubectl get ingressroutes.traefik.containo.us --no-headers --namespace $1 | awk '{print $1}'); do
+        kubectl get ingressroutes.traefik.containo.us $ingress --namespace $1 -o yaml >$1/ingress-$ingress 2>&1
+    done
+    kubectl get secret app-secrets -o yaml --namespace $1 >$1/app-secrets 2>&1
+)}
+
 ## Kubernetes delete all evicted pods ##
 function delete-evicted-pods() {(
     set -eo pipefail
